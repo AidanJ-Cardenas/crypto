@@ -1,0 +1,669 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  #ow-root {
+    --bg-deep: #070B14;
+    --bg-panel: #0F1626;
+    --bg-panel-raised: #151F35;
+    --accent: #FF6A1A;
+    --accent-dim: #6b3216;
+    --cyan: #33D6C4;
+    --cyan-dim: #12332F;
+    --text: #E9EEF6;
+    --text-dim: #8792A8;
+    --text-faint: #4C566E;
+    --green: #47DA8C;
+    --red: #F2685F;
+    --divider: rgba(255,255,255,0.08);
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    padding: 28px 20px 40px;
+    border-radius: 14px;
+    min-height: 100%;
+    box-sizing: border-box;
+  }
+  #ow-root * { box-sizing: border-box; }
+  #ow-root .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .ow-wrap { max-width: 880px; margin: 0 auto; }
+  .ow-wrap.hidden { display: none; }
+
+  /* header */
+  .ow-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    flex-wrap: wrap; gap: 14px; margin-bottom: 28px;
+  }
+  .ow-brand { display: flex; flex-direction: column; gap: 4px; }
+  .ow-brand .eyebrow {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+    color: var(--cyan); text-transform: uppercase;
+  }
+  .ow-brand h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .ow-wallet-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+  .ow-wallet-row .addr {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-dim);
+  }
+  .ow-edit-btn {
+    background: none; border: 1px solid var(--divider); color: var(--text-dim);
+    border-radius: 6px; padding: 2px 8px; font-size: 11px; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .ow-edit-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .ow-edit-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+  .ow-status-col { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .ow-refresh-row { display: flex; align-items: center; gap: 10px; }
+  .ow-updated { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-faint); }
+  .ow-refresh-btn {
+    background: var(--bg-panel-raised); border: 1px solid var(--divider); color: var(--text);
+    border-radius: 7px; width: 30px; height: 30px; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; transition: transform 0.4s ease;
+  }
+  .ow-refresh-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .ow-refresh-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .ow-refresh-btn.spinning { animation: ow-spin 0.7s linear; }
+  @keyframes ow-spin { to { transform: rotate(360deg); } }
+
+  /* address edit panel */
+  .ow-edit-panel {
+    display: none; margin: -10px 0 24px; padding: 14px 16px; background: var(--bg-panel);
+    border: 1px solid var(--divider); border-radius: 10px; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .ow-edit-panel.open { display: flex; }
+  .ow-edit-panel input {
+    flex: 1 1 320px; background: var(--bg-deep); border: 1px solid var(--divider); color: var(--text);
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 9px 10px; border-radius: 7px;
+  }
+  .ow-edit-panel input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+  .ow-save-btn {
+    background: var(--accent); border: none; color: #1a0d05; font-weight: 600; font-size: 12px;
+    padding: 9px 16px; border-radius: 7px; cursor: pointer;
+  }
+  .ow-save-btn:hover { filter: brightness(1.1); }
+  .ow-save-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+  /* hero / sonar */
+  .ow-hero {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 46px 20px 40px; margin-bottom: 24px; border-radius: 16px;
+    background: radial-gradient(ellipse at center, var(--bg-panel-raised) 0%, var(--bg-panel) 70%);
+    border: 1px solid var(--divider); overflow: hidden;
+  }
+  .ow-sonar { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .ow-sonar span {
+    position: absolute; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--cyan-dim); opacity: 0;
+    animation: ow-ping 3.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  }
+  .ow-sonar span:nth-child(2) { animation-delay: 1.05s; }
+  .ow-sonar span:nth-child(3) { animation-delay: 2.1s; }
+  @keyframes ow-ping {
+    0% { width: 40px; height: 40px; opacity: 0.55; border-color: var(--cyan); }
+    100% { width: 460px; height: 460px; opacity: 0; border-color: var(--cyan-dim); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ow-sonar span { animation: none; opacity: 0.15; width: 220px; height: 220px; }
+  }
+  .ow-hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--text-dim);
+    text-transform: uppercase; z-index: 1; margin-bottom: 10px;
+  }
+  .ow-hero-number {
+    font-family: 'IBM Plex Mono', monospace; font-size: clamp(38px, 8vw, 58px); font-weight: 600;
+    color: var(--accent); z-index: 1; line-height: 1; letter-spacing: -0.01em;
+  }
+  .ow-hero-sub {
+    z-index: 1; margin-top: 14px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;
+  }
+  .ow-hero-sub .item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim); }
+  .ow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); flex-shrink: 0; }
+  .ow-dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .ow-dot.off { background: var(--red); }
+
+  /* device cards */
+  .ow-devices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  @media (max-width: 560px) { .ow-devices { grid-template-columns: 1fr; } }
+  .ow-card {
+    background: var(--bg-panel); border: 1px solid var(--divider); border-radius: 12px; padding: 18px 18px 16px;
+  }
+  .ow-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px; }
+  .ow-card-name {
+    font-size: 14px; font-weight: 600; letter-spacing: 0.01em; outline: none; border-radius: 4px;
+    padding: 1px 4px; margin: -1px -4px; cursor: text;
+  }
+  .ow-card-name:hover { background: var(--bg-panel-raised); }
+  .ow-card-name:focus-visible { outline: 2px solid var(--cyan); }
+  .ow-card-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+  .ow-card-hash {
+    font-family: 'IBM Plex Mono', monospace; font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+  }
+  .ow-card-rows { display: flex; flex-direction: column; gap: 7px; }
+  .ow-card-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-dim); }
+  .ow-card-row .v { font-family: 'IBM Plex Mono', monospace; color: var(--text); }
+
+  .ow-empty-note {
+    grid-column: 1 / -1; text-align: center; padding: 24px; color: var(--text-dim); font-size: 13px;
+    border: 1px dashed var(--divider); border-radius: 12px;
+  }
+
+  /* balance panel */
+  .ow-balance {
+    background: var(--bg-panel); border: 1px solid var(--divider); border-radius: 12px; padding: 22px 22px 20px;
+    margin-bottom: 16px;
+  }
+  .ow-balance-top { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .ow-balance-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
+  .ow-balance-xmr { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 600; color: var(--cyan); }
+  .ow-balance-usd { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+  .ow-paid-stats { text-align: right; font-size: 12px; color: var(--text-dim); }
+  .ow-paid-stats .v { color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+
+  .ow-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-faint); margin-bottom: 6px; }
+  .ow-progress-track { height: 8px; background: var(--bg-deep); border-radius: 5px; overflow: hidden; border: 1px solid var(--divider); }
+  .ow-progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan-dim), var(--cyan)); border-radius: 5px; transition: width 0.6s ease; }
+
+  .ow-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .ow-action-btn {
+    flex: 1 1 200px; text-align: center; text-decoration: none; padding: 11px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; transition: filter 0.15s ease;
+  }
+  .ow-action-btn.primary { background: var(--accent); color: #1a0d05; }
+  .ow-action-btn.secondary { background: var(--bg-panel-raised); color: var(--text); border: 1px solid var(--divider); }
+  .ow-action-btn:hover { filter: brightness(1.12); }
+  .ow-action-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .ow-fine-print { font-size: 11px; color: var(--text-faint); margin-top: 12px; line-height: 1.5; }
+
+  .ow-debug-toggle {
+    display: block; margin: 4px auto 0; background: none; border: none; color: var(--text-faint);
+    font-size: 11px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+  }
+  .ow-debug-panel { display: none; margin-top: 10px; }
+  .ow-debug-panel.open { display: block; }
+  .ow-debug-panel pre {
+    background: var(--bg-deep); border: 1px solid var(--divider); border-radius: 8px; padding: 12px;
+    font-size: 10px; color: var(--text-dim); overflow-x: auto; max-height: 220px;
+  }
+
+  .ow-error {
+    background: rgba(242,104,95,0.08); border: 1px solid rgba(242,104,95,0.3); color: #F2A39D;
+    border-radius: 10px; padding: 12px 16px; font-size: 12.5px; margin-bottom: 20px; line-height: 1.5;
+  }
+
+  /* login gate */
+  .ow-login-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 420px; padding: 40px 20px; text-align: center;
+  }
+  .ow-login-screen.hidden { display: none; }
+  .ow-login-sonar {
+    position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 22px;
+  }
+  .ow-login-sonar .core {
+    width: 14px; height: 14px; border-radius: 50%; background: var(--accent); z-index: 1;
+    box-shadow: 0 0 14px var(--accent);
+  }
+  .ow-login-sonar span {
+    position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid var(--cyan-dim); opacity: 0;
+    animation: ow-ping 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  }
+  .ow-login-sonar span:nth-child(2) { animation-delay: 0.85s; }
+  .ow-login-sonar span:nth-child(3) { animation-delay: 1.7s; }
+  @media (prefers-reduced-motion: reduce) {
+    .ow-login-sonar span { animation: none; opacity: 0.2; width: 40px; height: 40px; }
+  }
+  .ow-login-eyebrow {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--cyan);
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .ow-login-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+  .ow-login-form { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px; }
+  .ow-login-field { text-align: left; }
+  .ow-login-field label {
+    display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em;
+    color: var(--text-faint); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .ow-login-field input {
+    width: 100%; background: var(--bg-panel); border: 1px solid var(--divider); color: var(--text);
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 10px 12px; border-radius: 8px;
+  }
+  .ow-login-field input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+  .ow-login-form.shake { animation: ow-shake 0.4s; }
+  @keyframes ow-shake {
+    25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } 100% { transform: translateX(0); }
+  }
+  .ow-login-submit {
+    margin-top: 6px; background: var(--accent); border: none; color: #1a0d05; font-weight: 600; font-size: 13px;
+    padding: 11px 14px; border-radius: 8px; cursor: pointer;
+  }
+  .ow-login-submit:hover { filter: brightness(1.1); }
+  .ow-login-submit:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .ow-login-error {
+    font-size: 12px; color: var(--red); min-height: 16px; margin-top: 2px;
+  }
+  .ow-login-note {
+    font-size: 11px; color: var(--text-faint); margin-top: 18px; max-width: 280px; line-height: 1.5;
+  }
+</style>
+
+<div id="ow-root">
+
+  <div class="ow-login-screen" id="ow-login-screen">
+    <div class="ow-login-sonar"><span></span><span></span><span></span><div class="core"></div></div>
+    <div class="ow-login-eyebrow">Ocean Watch</div>
+    <div class="ow-login-title">Sign in to view your rigs</div>
+    <form class="ow-login-form" id="ow-login-form" autocomplete="off">
+      <div class="ow-login-field">
+        <label for="ow-login-user">Username</label>
+        <input type="text" id="ow-login-user" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+      </div>
+      <div class="ow-login-field">
+        <label for="ow-login-pass">Password</label>
+        <input type="password" id="ow-login-pass" autocomplete="off" />
+      </div>
+      <div class="ow-login-error" id="ow-login-error"></div>
+      <button class="ow-login-submit" type="submit">Sign in</button>
+    </form>
+    <div class="ow-login-note">This just keeps the page from opening casually on this device — it isn't real account security, so don't rely on it to protect anything sensitive.</div>
+  </div>
+
+  <div class="ow-wrap hidden" id="ow-dashboard-wrap">
+
+    <div class="ow-header">
+      <div class="ow-brand">
+        <span class="eyebrow">MoneroOcean · live</span>
+        <h1>Ocean Watch</h1>
+        <div class="ow-wallet-row">
+          <span class="addr mono" id="ow-addr-display">—</span>
+          <button class="ow-edit-btn" id="ow-edit-toggle" type="button">edit</button>
+        </div>
+      </div>
+      <div class="ow-status-col">
+        <div class="ow-refresh-row">
+          <span class="ow-updated mono" id="ow-updated">not loaded yet</span>
+          <button class="ow-refresh-btn" id="ow-refresh-btn" type="button" aria-label="Refresh now">⟳</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ow-edit-panel" id="ow-edit-panel">
+      <input type="text" id="ow-addr-input" class="mono" placeholder="Your Monero payout address (starts with 4...)" />
+      <button class="ow-save-btn" id="ow-save-btn" type="button">Save</button>
+    </div>
+
+    <div id="ow-error-slot"></div>
+
+    <div class="ow-hero">
+      <div class="ow-sonar"><span></span><span></span><span></span></div>
+      <div class="ow-hero-eyebrow">Combined hashrate</div>
+      <div class="ow-hero-number mono" id="ow-combined-hash">— H/s</div>
+      <div class="ow-hero-sub">
+        <span class="item"><span class="ow-dot" id="ow-online-dot"></span><span id="ow-online-text">checking devices…</span></span>
+        <span class="item">valid shares <span class="mono" id="ow-total-valid" style="color:var(--text)">—</span></span>
+        <span class="item">invalid <span class="mono" id="ow-total-invalid" style="color:var(--text)">—</span></span>
+      </div>
+    </div>
+
+    <div class="ow-devices" id="ow-devices">
+      <div class="ow-empty-note">Waiting for worker data from the pool…</div>
+    </div>
+
+    <div class="ow-balance">
+      <div class="ow-balance-top">
+        <div>
+          <div class="ow-balance-label">Pending balance</div>
+          <div class="ow-balance-xmr mono" id="ow-balance-xmr">— XMR</div>
+          <div class="ow-balance-usd" id="ow-balance-usd"></div>
+        </div>
+        <div class="ow-paid-stats">
+          <div>paid to date: <span class="v" id="ow-paid-total">—</span></div>
+          <div>payments made: <span class="v" id="ow-paid-count">—</span></div>
+        </div>
+      </div>
+
+      <div id="ow-progress-wrap">
+        <div class="ow-progress-label">
+          <span>toward payout threshold</span>
+          <span class="mono" id="ow-progress-pct">—</span>
+        </div>
+        <div class="ow-progress-track"><div class="ow-progress-fill" id="ow-progress-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="ow-actions">
+        <a class="ow-action-btn primary" id="ow-payout-link" href="https://moneroocean.stream/" target="_blank" rel="noopener">Open MoneroOcean payout settings</a>
+        <a class="ow-action-btn secondary" href="https://www.coingecko.com/en/coins/monero#markets" target="_blank" rel="noopener">Where to cash out XMR</a>
+      </div>
+      <div class="ow-fine-print">
+        Payouts and withdrawals happen on MoneroOcean's own site — this dashboard is read-only and never touches your keys.
+        The exchange link goes to CoinGecko's live market list rather than one hardcoded exchange, since which platforms
+        list Monero changes over time.
+      </div>
+
+      <button class="ow-debug-toggle" id="ow-debug-toggle" type="button">Show raw API response</button>
+      <div class="ow-debug-panel" id="ow-debug-panel">
+        <pre id="ow-debug-content">—</pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  const DEFAULT_ADDRESS = "4AG9hT273r8GyjbSZmvKi8JbMp8WCNFpbNmYb7kmPPeBDh1wCfKtihxS61tXEMV3Jr9NV2xg1hX2JhjCzc7E37LjEfTYDuW";
+  const POLL_MS = 30000;
+  const ONLINE_WINDOW_MS = 10 * 60 * 1000;
+
+  let address = DEFAULT_ADDRESS;
+  let xmrUsd = null;
+  let pollTimer = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  function pick(obj, keys, fallback) {
+    for (const k of keys) {
+      if (obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
+    }
+    return fallback;
+  }
+
+  function formatHashrate(h) {
+    h = Number(h) || 0;
+    if (h >= 1e6) return (h / 1e6).toFixed(2) + ' MH/s';
+    if (h >= 1e3) return (h / 1e3).toFixed(2) + ' kH/s';
+    return Math.round(h) + ' H/s';
+  }
+
+  function piconeroToXmr(p) {
+    const n = Number(p) || 0;
+    return n / 1e12;
+  }
+
+  function formatXmr(x, decimals) {
+    decimals = decimals === undefined ? 6 : decimals;
+    return Number(x).toFixed(decimals).replace(/0+$/, '').replace(/\.$/, '') + ' XMR';
+  }
+
+  function shortAddr(a) {
+    if (!a) return '—';
+    return a.slice(0, 8) + '…' + a.slice(-6);
+  }
+
+  function toMs(ts) {
+    if (!ts) return 0;
+    const n = Number(ts);
+    return n > 1e12 ? n : n * 1000;
+  }
+
+  function timeAgo(ms) {
+    if (!ms) return 'never';
+    const diff = Date.now() - ms;
+    if (diff < 0) return 'just now';
+    const s = Math.floor(diff / 1000);
+    if (s < 60) return s + 's ago';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  async function loadLabel(workerId) {
+    try {
+      const res = await window.storage.get('label:' + workerId);
+      return res ? res.value : null;
+    } catch (e) { return null; }
+  }
+  async function saveLabel(workerId, label) {
+    try { await window.storage.set('label:' + workerId, label); } catch (e) {}
+  }
+
+  async function loadSavedAddress() {
+    try {
+      const res = await window.storage.get('wallet-address');
+      if (res && res.value) return res.value;
+    } catch (e) {}
+    return null;
+  }
+  async function saveAddress(a) {
+    try { await window.storage.set('wallet-address', a); } catch (e) {}
+  }
+
+  function showError(msg) {
+    $('ow-error-slot').innerHTML = '<div class="ow-error">' + msg + '</div>';
+  }
+  function clearError() {
+    $('ow-error-slot').innerHTML = '';
+  }
+
+  async function fetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  async function fetchPrice() {
+    try {
+      const data = await fetchJson('https://api.coingecko.com/api/v3/simple/price?ids=monero&vs_currencies=usd');
+      xmrUsd = pick(data && data.monero, ['usd'], null);
+    } catch (e) {
+      xmrUsd = null;
+    }
+  }
+
+  async function refresh(isManual) {
+    const btn = $('ow-refresh-btn');
+    if (isManual) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 700); }
+
+    const API_BASES = ['https://api.moneroocean.stream/miner/', 'https://moneroocean.stream/api/miner/'];
+
+    async function fetchWithFallback(pathSuffix) {
+      let lastErr;
+      for (const base of API_BASES) {
+        try {
+          return await fetchJson(base + address + pathSuffix);
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+      throw lastErr;
+    }
+
+    let stats, workers;
+    try {
+      [stats, workers] = await Promise.all([
+        fetchWithFallback('/stats'),
+        fetchWithFallback('/stats/allWorkers')
+      ]);
+      clearError();
+    } catch (e) {
+      showError('Could not reach the MoneroOcean API right now (' + e.message + '). This page keeps trying every 30s — check that the wallet address is correct and that your network allows requests to api.moneroocean.stream.');
+      $('ow-updated').textContent = 'last attempt failed';
+      return;
+    }
+
+    if (!Array.isArray(workers)) workers = [];
+
+    // debug panel
+    $('ow-debug-content').textContent = JSON.stringify({ stats, workers }, null, 2);
+
+    // ----- hero: combined -----
+    let combinedHash = 0, totalValid = 0, totalInvalid = 0, onlineCount = 0;
+    workers.forEach(w => {
+      combinedHash += Number(pick(w, ['hash', 'hashrate'], 0)) || 0;
+      totalValid += Number(pick(w, ['validShares'], 0)) || 0;
+      totalInvalid += Number(pick(w, ['invalidShares'], 0)) || 0;
+      const last = toMs(pick(w, ['lastHash', 'lastShare'], 0));
+      if (Date.now() - last < ONLINE_WINDOW_MS) onlineCount++;
+    });
+    // fall back to top-level stats if per-worker hash sum is zero but stats has a hash figure
+    if (combinedHash === 0) combinedHash = Number(pick(stats, ['hash', 'hash2'], 0)) || 0;
+    if (totalValid === 0) totalValid = Number(pick(stats, ['validShares'], 0)) || 0;
+    if (totalInvalid === 0) totalInvalid = Number(pick(stats, ['invalidShares'], 0)) || 0;
+
+    $('ow-combined-hash').textContent = formatHashrate(combinedHash);
+    $('ow-total-valid').textContent = totalValid.toLocaleString();
+    $('ow-total-invalid').textContent = totalInvalid.toLocaleString();
+
+    const dot = $('ow-online-dot');
+    const totalDevices = workers.length || 1;
+    if (onlineCount > 0) {
+      dot.className = 'ow-dot on';
+      $('ow-online-text').textContent = onlineCount + ' of ' + totalDevices + ' device' + (totalDevices === 1 ? '' : 's') + ' online';
+    } else {
+      dot.className = 'ow-dot off';
+      $('ow-online-text').textContent = 'no devices reporting right now';
+    }
+
+    // ----- device cards -----
+    const container = $('ow-devices');
+    if (workers.length === 0) {
+      container.innerHTML = '<div class="ow-empty-note">No individual workers found yet for this address. Make sure each device mines with its own worker/rig name (e.g. <span class="mono">pass=raspi</span> and <span class="mono">pass=chromebook</span>) so they show up separately here. It can take a few minutes after a device starts mining.</div>';
+    } else {
+      container.innerHTML = '';
+      for (const w of workers) {
+        const id = String(pick(w, ['id', 'identifier', 'rig_id'], 'worker'));
+        const hash = Number(pick(w, ['hash', 'hashrate'], 0)) || 0;
+        const valid = Number(pick(w, ['validShares'], 0)) || 0;
+        const invalid = Number(pick(w, ['invalidShares'], 0)) || 0;
+        const lastMs = toMs(pick(w, ['lastHash', 'lastShare'], 0));
+        const online = Date.now() - lastMs < ONLINE_WINDOW_MS;
+
+        const card = document.createElement('div');
+        card.className = 'ow-card';
+        card.innerHTML =
+          '<div class="ow-card-head">' +
+            '<span class="ow-card-name" contenteditable="true" spellcheck="false" data-worker-id="' + id + '">' + id + '</span>' +
+            '<span class="ow-card-status"><span class="ow-dot ' + (online ? 'on' : 'off') + '"></span>' + (online ? 'online' : 'offline') + '</span>' +
+          '</div>' +
+          '<div class="ow-card-hash">' + formatHashrate(hash) + '</div>' +
+          '<div class="ow-card-rows">' +
+            '<div class="ow-card-row"><span>valid / invalid shares</span><span class="v">' + valid.toLocaleString() + ' / ' + invalid.toLocaleString() + '</span></div>' +
+            '<div class="ow-card-row"><span>last share</span><span class="v">' + timeAgo(lastMs) + '</span></div>' +
+          '</div>';
+        container.appendChild(card);
+
+        loadLabel(id).then(saved => {
+          if (saved) card.querySelector('.ow-card-name').textContent = saved;
+        });
+        const nameEl = card.querySelector('.ow-card-name');
+        nameEl.addEventListener('blur', () => {
+          const val = nameEl.textContent.trim() || id;
+          saveLabel(id, val);
+        });
+        nameEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+        });
+      }
+    }
+
+    // ----- balance -----
+    const amtDue = piconeroToXmr(pick(stats, ['amtDue', 'pending', 'balance'], 0));
+    const amtPaid = piconeroToXmr(pick(stats, ['amtPaid', 'paid'], 0));
+    const txnCount = Number(pick(stats, ['txnCount', 'txCount'], 0)) || 0;
+    const threshold = piconeroToXmr(pick(stats, ['paymentThreshold', 'threshold'], 0));
+
+    $('ow-balance-xmr').textContent = formatXmr(amtDue);
+    $('ow-paid-total').textContent = formatXmr(amtPaid, 4);
+    $('ow-paid-count').textContent = txnCount.toLocaleString();
+
+    if (xmrUsd) {
+      $('ow-balance-usd').textContent = '≈ $' + (amtDue * xmrUsd).toFixed(2) + ' USD';
+    } else {
+      $('ow-balance-usd').textContent = '';
+    }
+
+    if (threshold > 0) {
+      const pct = Math.min(100, (amtDue / threshold) * 100);
+      $('ow-progress-fill').style.width = pct.toFixed(1) + '%';
+      $('ow-progress-pct').textContent = pct.toFixed(1) + '% (' + formatXmr(threshold, 3) + ' threshold)';
+      $('ow-progress-wrap').style.display = '';
+    } else {
+      $('ow-progress-wrap').style.display = 'none';
+    }
+
+    $('ow-updated').textContent = 'updated ' + new Date().toLocaleTimeString();
+  }
+
+  function scheduleNext() {
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = setTimeout(() => { refresh(false); scheduleNext(); }, POLL_MS);
+  }
+
+  function updateAddrDisplay() {
+    $('ow-addr-display').textContent = shortAddr(address);
+    $('ow-addr-input').value = address;
+  }
+
+  $('ow-edit-toggle').addEventListener('click', () => {
+    $('ow-edit-panel').classList.toggle('open');
+    if ($('ow-edit-panel').classList.contains('open')) $('ow-addr-input').focus();
+  });
+
+  $('ow-save-btn').addEventListener('click', async () => {
+    const val = $('ow-addr-input').value.trim();
+    if (val.length < 90) { $('ow-addr-input').style.borderColor = 'var(--red)'; return; }
+    address = val;
+    await saveAddress(address);
+    updateAddrDisplay();
+    $('ow-edit-panel').classList.remove('open');
+    refresh(true);
+    scheduleNext();
+  });
+
+  $('ow-refresh-btn').addEventListener('click', () => refresh(true));
+
+  $('ow-debug-toggle').addEventListener('click', () => {
+    const panel = $('ow-debug-panel');
+    panel.classList.toggle('open');
+    $('ow-debug-toggle').textContent = panel.classList.contains('open') ? 'Hide raw API response' : 'Show raw API response';
+  });
+
+  const VALID_HASH = '14540faf6d0fd495b4002565a0ac424665ade800825d663f78c5e64d7a0bc2be';
+
+  async function sha256Hex(str) {
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function initDashboard() {
+    const saved = await loadSavedAddress();
+    address = saved || DEFAULT_ADDRESS;
+    if (!saved) await saveAddress(address);
+    updateAddrDisplay();
+    fetchPrice();
+    await refresh(true);
+    scheduleNext();
+  }
+
+  function showDashboard() {
+    $('ow-login-screen').classList.add('hidden');
+    $('ow-dashboard-wrap').classList.remove('hidden');
+    initDashboard();
+  }
+
+  $('ow-login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = $('ow-login-user').value.trim().toLowerCase();
+    const pass = $('ow-login-pass').value;
+    const errEl = $('ow-login-error');
+    const formEl = $('ow-login-form');
+    const hash = await sha256Hex(user + ':' + pass);
+    if (hash === VALID_HASH) {
+      showDashboard();
+    } else {
+      errEl.textContent = 'Incorrect username or password.';
+      formEl.classList.remove('shake');
+      void formEl.offsetWidth;
+      formEl.classList.add('shake');
+      $('ow-login-pass').value = '';
+      $('ow-login-pass').focus();
+    }
+  });
+
+  $('ow-login-user').focus();
+})();
+</script>
